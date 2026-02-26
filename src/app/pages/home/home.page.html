@@ -1,0 +1,161 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>
+      <ion-icon name="checkmark-done-circle" style="margin-right:8px"></ion-icon>
+      My Tasks
+    </ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="clearDone()" [disabled]="stats.completed === 0">
+        <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+
+  <!-- Stats Banner -->
+  <div class="stats-banner">
+    <div class="stat">
+      <span class="stat-value">{{ stats.total }}</span>
+      <span class="stat-label">Total</span>
+    </div>
+    <div class="stat">
+      <span class="stat-value">{{ stats.active }}</span>
+      <span class="stat-label">Pendientes</span>
+    </div>
+    <div class="stat">
+      <span class="stat-value">{{ stats.completed }}</span>
+      <span class="stat-label">Completadas</span>
+    </div>
+  </div>
+
+  <!-- Category Filter Chips -->
+  <div class="filter-scroll">
+    <ion-chip
+      [class.active]="categoryControl.value === 'all'"
+      (click)="categoryControl.setValue('all')"
+      outline>
+      <ion-icon name="list"></ion-icon>
+      <ion-label>Todas</ion-label>
+    </ion-chip>
+    <ion-chip
+      *ngFor="let cat of categories"
+      [class.active]="categoryControl.value === cat.value"
+      (click)="categoryControl.setValue(cat.value)"
+      outline>
+      <ion-icon [name]="cat.icon" [style.color]="cat.color"></ion-icon>
+      <ion-label>{{ cat.label }}</ion-label>
+    </ion-chip>
+  </div>
+
+  <!-- Status Segment -->
+  <ion-segment [formControl]="statusControl" class="status-segment">
+    <ion-segment-button value="all"><ion-label>Todas</ion-label></ion-segment-button>
+    <ion-segment-button value="active"><ion-label>Activas</ion-label></ion-segment-button>
+    <ion-segment-button value="completed"><ion-label>Hechas</ion-label></ion-segment-button>
+  </ion-segment>
+
+  <!-- Task List -->
+  <ion-list *ngIf="tasks.length > 0; else emptyState" lines="none" class="task-list">
+    <ion-item-sliding
+      *ngFor="let task of tasks; trackBy: trackById"
+      class="task-slide">
+
+      <ion-item-options side="end">
+        <ion-item-option color="danger" (click)="delete(task.id)" expandable>
+          <ion-icon slot="icon-only" name="trash"></ion-icon>
+        </ion-item-option>
+      </ion-item-options>
+
+      <ion-item class="task-item" [class.task-completed]="task.completed">
+        <ion-checkbox
+          slot="start"
+          [checked]="task.completed"
+          (ionChange)="toggle(task.id)">
+        </ion-checkbox>
+        <ion-label>
+          <h2>{{ task.title }}</h2>
+          <p *ngIf="task.description">{{ task.description }}</p>
+          <div class="task-meta">
+            <ion-badge [style.background]="getCategoryMeta(task.category)?.color">
+              <ion-icon [name]="getCategoryMeta(task.category)?.icon" style="margin-right: 4px;"></ion-icon>
+              {{ getCategoryMeta(task.category)?.label }}
+            </ion-badge>
+            <span class="task-date">{{ task.createdAt | date:'d MMM' }}</span>
+          </div>
+        </ion-label>
+      </ion-item>
+    </ion-item-sliding>
+  </ion-list>
+
+  <!-- Empty State -->
+  <ng-template #emptyState>
+    <div class="empty-state">
+      <ion-icon name="clipboard-outline"></ion-icon>
+      <h3>Sin tareas</h3>
+      <p>Agrega una tarea con el botón +</p>
+    </div>
+  </ng-template>
+
+  <!-- FAB -->
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button (click)="openAddModal()" color="primary">
+      <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+
+</ion-content>
+
+<!-- Add Task Modal -->
+<ion-modal [isOpen]="isAddModalOpen" (didDismiss)="closeAddModal()" [breakpoints]="[0, 0.6, 0.9]" [initialBreakpoint]="0.6">
+  <ng-template>
+    <ion-header>
+      <ion-toolbar>
+        <ion-title>Nueva Tarea</ion-title>
+        <ion-buttons slot="end">
+          <ion-button (click)="closeAddModal()">
+            <ion-icon name="close" slot="icon-only"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content class="ion-padding">
+      <ion-item>
+        <ion-label position="stacked">Título *</ion-label>
+        <ion-input
+          [(ngModel)]="newTitle"
+          placeholder="¿Qué hay que hacer?"
+          (keyup.enter)="addTask()">
+        </ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="stacked">Descripción (opcional)</ion-label>
+        <ion-textarea
+          [(ngModel)]="newDescription"
+          placeholder="Detalles adicionales..."
+          rows="2">
+        </ion-textarea>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="stacked">Categoría</ion-label>
+        <ion-select [(ngModel)]="newCategory" interface="action-sheet">
+          <ion-select-option *ngFor="let cat of categories" [value]="cat.value">
+            {{ cat.label }}
+          </ion-select-option>
+        </ion-select>
+      </ion-item>
+
+      <ion-button
+        expand="block"
+        class="ion-margin-top"
+        (click)="addTask()"
+        [disabled]="!newTitle.trim()">
+        <ion-icon name="add-circle" slot="start"></ion-icon>
+        Agregar Tarea
+      </ion-button>
+    </ion-content>
+  </ng-template>
+</ion-modal>
