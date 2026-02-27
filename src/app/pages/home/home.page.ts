@@ -1,6 +1,6 @@
-import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, TrackByFunction } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, TrackByFunction } from '@angular/core';
 import { Subject, combineLatest } from 'rxjs';
-import { takeUntil, debounceTime, startWith } from 'rxjs/operators';
+import { takeUntil, debounceTime, startWith, switchMap } from 'rxjs/operators';
 import { FormControl } from '@angular/forms';
 import { Task, TaskCategory, TASK_CATEGORIES, TaskFilter } from '../../models/task.model';
 import { TaskService } from '../../services/task.service';
@@ -36,28 +36,36 @@ export class HomePage implements OnInit, OnDestroy {
   newDescription = '';
   newCategory: TaskCategory = 'personal';
 
-  constructor(public taskService: TaskService) {}
+  constructor(
+    public taskService: TaskService,
+    private cdr: ChangeDetectorRef,
+  ) {}
 
   ngOnInit(): void {
     combineLatest([
-      this.categoryControl.valueChanges.pipe(startWith('all')),
-      this.statusControl.valueChanges.pipe(startWith('all')),
+      this.categoryControl.valueChanges.pipe(startWith(this.categoryControl.value)),
+      this.statusControl.valueChanges.pipe(startWith(this.statusControl.value)),
     ]).pipe(
-      debounceTime(100),
+      debounceTime(0),
+      switchMap(([category, status]) => {
+        const filter: TaskFilter = {
+          category: category as TaskCategory | 'all',
+          status: status as 'all' | 'active' | 'completed',
+        };
+        return this.taskService.getTasks(filter);
+      }),
       takeUntil(this.destroy$),
-    ).subscribe(([category, status]) => {
-      const filter: TaskFilter = {
-        category: category as TaskCategory | 'all',
-        status: status as 'all' | 'active' | 'completed',
-      };
-      this.taskService.getTasks(filter)
-        .pipe(takeUntil(this.destroy$))
-        .subscribe(t => this.tasks = t);
+    ).subscribe(t => {
+      this.tasks = t;
+      this.cdr.markForCheck();
     });
 
     this.taskService.getStats()
       .pipe(takeUntil(this.destroy$))
-      .subscribe(s => this.stats = s);
+      .subscribe(s => {
+        this.stats = s;
+        this.cdr.markForCheck();
+      });
   }
 
   ngOnDestroy(): void {
@@ -81,7 +89,6 @@ export class HomePage implements OnInit, OnDestroy {
 
   toggle(id: string): void { this.taskService.toggleTask(id); }
   delete(id: string): void { this.taskService.deleteTask(id); }
-  clearDone(): void        { this.taskService.clearCompleted(); }
 
   trackById: TrackByFunction<Task> = (_, t) => t.id;
 

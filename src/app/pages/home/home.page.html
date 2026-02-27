@@ -4,11 +4,6 @@
       <ion-icon name="checkmark-done-circle" style="margin-right:8px"></ion-icon>
       My Tasks
     </ion-title>
-    <ion-buttons slot="end">
-      <ion-button (click)="clearDone()" [disabled]="stats.completed === 0">
-        <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
-      </ion-button>
-    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
@@ -50,7 +45,7 @@
   </div>
 
   <!-- Status Segment -->
-  <ion-segment [formControl]="statusControl" class="status-segment">
+  <ion-segment [formControl]="statusControl" [value]="statusControl.value" class="status-segment">
     <ion-segment-button value="all"><ion-label>Todas</ion-label></ion-segment-button>
     <ion-segment-button value="active"><ion-label>Activas</ion-label></ion-segment-button>
     <ion-segment-button value="completed"><ion-label>Hechas</ion-label></ion-segment-button>
