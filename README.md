@@ -104,6 +104,14 @@ src/
 | `npm run test` | Ejecutar pruebas unitarias |
 | `npm run lint` | Ejecutar linter |
 
+## 📸 Capturas de pantalla
+
+![Vista Principal](./resources/one.png)
+
+![Vista de Tareas](./resources/two.png)
+
+![Vista Completada](./resources/three.png)
+
 ## 📄 Licencia
 
 MIT
