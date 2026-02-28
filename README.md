@@ -106,11 +106,18 @@ src/
 
 ## 📸 Capturas de pantalla
 
-![Vista Principal](./resources/one.png)
-
-![Vista de Tareas](./resources/two.png)
-
-![Vista Completada](./resources/three.png)
+<table>
+  <tr>
+    <td><img src="./resources/one.png" alt="Vista Principal" width="200"/></td>
+    <td><img src="./resources/two.png" alt="Vista de Tareas" width="200"/></td>
+    <td><img src="./resources/three.png" alt="Vista Vacia" width="200"/></td>
+  </tr>
+  <tr>
+    <td align="center">Vista Principal</td>
+    <td align="center">Vista de Tareas</td>
+    <td align="center">Vista Vacia</td>
+  </tr>
+</table>
 
 ## 📄 Licencia
 
